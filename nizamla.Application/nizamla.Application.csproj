@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nizamla.Core\Nizamla.Core.csproj" />
-    <ProjectReference Include="..\nizamla.Infrastructure\nizamla.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

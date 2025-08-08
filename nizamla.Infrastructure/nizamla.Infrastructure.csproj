@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\nizamla.Application\nizamla.Application.csproj" />
     <ProjectReference Include="..\Nizamla.Core\Nizamla.Core.csproj" />
   </ItemGroup>
 
