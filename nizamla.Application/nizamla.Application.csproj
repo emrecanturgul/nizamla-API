@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Nizamla.Core\Nizamla.Core.csproj" />
+    <ProjectReference Include="..\Nizamla.Core\nizamla.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

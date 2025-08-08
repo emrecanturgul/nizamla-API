@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nizamla.Core\Nizamla.Core.csproj" />
+    <ProjectReference Include="..\Nizamla.Core\nizamla.Domain.csproj" />
     <ProjectReference Include="..\Nizamla.Infrastructure\Nizamla.Infrastructure.csproj" />
     <ProjectReference Include="..\Nizamla.Application\Nizamla.Application.csproj" />
   </ItemGroup>

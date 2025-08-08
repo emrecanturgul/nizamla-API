@@ -1,15 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nizamla.API", "nizamla.API\nizamla.API.csproj", "{EA7FC9FF-C47A-42D7-B445-937F17E87F6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nizamla.Core", "Nizamla.Core\nizamla.Core.csproj", "{89203742-0EB4-49AF-A43B-654CF5C1A684}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nizamla.Domain", "Nizamla.Core\nizamla.Domain.csproj", "{89203742-0EB4-49AF-A43B-654CF5C1A684}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nizamla.Infrastructure", "nizamla.Infrastructure\nizamla.Infrastructure.csproj", "{BB1C35AA-5324-4CB5-8C89-AC9301486922}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nizamla.Application", "nizamla.Application\nizamla.Application.csproj", "{E962AC1E-E050-4E94-BAEC-15374EF36705}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{4387082C-BEEA-47A8-BAA2-796163964C83}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{211FD926-45CC-4ED2-A563-C771529FDC2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{7AC5CC97-E448-48CD-9AF9-CB0EC38BC862}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +44,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA7FC9FF-C47A-42D7-B445-937F17E87F6D} = {4387082C-BEEA-47A8-BAA2-796163964C83}
+		{89203742-0EB4-49AF-A43B-654CF5C1A684} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{BB1C35AA-5324-4CB5-8C89-AC9301486922} = {7AC5CC97-E448-48CD-9AF9-CB0EC38BC862}
+		{E962AC1E-E050-4E94-BAEC-15374EF36705} = {211FD926-45CC-4ED2-A563-C771529FDC2D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6D0B2D64-D07B-41DB-833A-65876E411F42}

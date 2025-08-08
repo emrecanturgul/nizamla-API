@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\nizamla.Application\nizamla.Application.csproj" />
-    <ProjectReference Include="..\Nizamla.Core\Nizamla.Core.csproj" />
+    <ProjectReference Include="..\Nizamla.Core\nizamla.Domain.csproj" />
   </ItemGroup>
 
 </Project>
