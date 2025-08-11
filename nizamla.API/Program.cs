@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using nizamla.Application.Mappings;
 using nizamla.Application.Services;
 using nizamla.Core.Interfaces;
 using nizamla.Infrastructure.Data;
@@ -11,13 +12,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// AutoMapper Configuration  
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 // Database Configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Dependency Injection
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-
 builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();

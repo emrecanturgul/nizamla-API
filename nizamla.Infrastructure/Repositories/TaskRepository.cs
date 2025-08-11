@@ -56,9 +56,7 @@ namespace nizamla.Infrastructure.Repositories
         {
             var existingTask = await _context.TaskItems.FindAsync(taskItem.Id);
             if (existingTask == null)
-                return null; 
-
-            // Update existing task
+                return null;
             existingTask.Title = taskItem.Title;
             existingTask.Description = taskItem.Description;
             existingTask.DueDate = taskItem.DueDate;

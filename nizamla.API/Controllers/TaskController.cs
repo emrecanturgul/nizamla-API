@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using nizamla.Application.dtos;
 using nizamla.Application.DTOs;
 using nizamla.Application.Services;
-using nizamla.Core.Entities;
 
 namespace nizamla.API.Controllers
 {
@@ -16,14 +15,16 @@ namespace nizamla.API.Controllers
         {
             _taskService = taskService;
         }
+
         [HttpGet]
-        public async Task<IActionResult> GetAllTasks()
+        public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetAllTasks()
         {
             var tasks = await _taskService.GetAllTasksAsync();
             return Ok(tasks);
         }
+
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTaskById(int id)
+        public async Task<ActionResult<TaskItemDto>> GetTaskById(int id)
         {
             var task = await _taskService.GetTaskByIdAsync(id);
             if (task == null)
@@ -33,15 +34,28 @@ namespace nizamla.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTask([FromBody] TaskItem taskItem)
+        public async Task<ActionResult<TaskItemDto>> CreateTask([FromBody] CreateTaskDto createTaskDto)
         {
-            if (taskItem == null)
-                return BadRequest("Görev bilgisi boş olamaz");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var createdTask = await _taskService.CreateTaskAsync(taskItem);
+            var createdTask = await _taskService.CreateTaskAsync(createTaskDto);
             return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
         }
-        
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<TaskItemDto>> UpdateTask(int id, [FromBody] UpdateTaskDto updateTaskDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedTask = await _taskService.UpdateTaskAsync(id, updateTaskDto);
+            if (updatedTask == null)
+                return NotFound($"ID {id} olan görev bulunamadı");
+
+            return Ok(updatedTask);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
@@ -51,7 +65,5 @@ namespace nizamla.API.Controllers
 
             return NoContent();
         }
-        
-
     }
 }
