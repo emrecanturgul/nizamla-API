@@ -13,7 +13,7 @@ namespace nizamla.Application.Interfaces
         Task<User?> GetByIdAsync(int id);
         Task<User?> GetByUsernameAsync(string username);
         Task<User> CreateAsync(User user);
-
+        Task<User?> GetByEmailAsync(string email);
         Task AddRefreshTokenAsync(RefreshToken token);
         Task<RefreshToken?> GetRefreshTokenAsync(string token);
 

@@ -71,10 +71,10 @@ public class JwtTokenService : IJwtService
             rt.RevokedAt = DateTime.UtcNow;
             await _users.SaveChangesAsync();
         }
-    private static string GenerateSecureToken()
-    {
+        private static string GenerateSecureToken()
+       {
         Span<byte> buffer = stackalloc byte[32];
         RandomNumberGenerator.Fill(buffer);
         return Convert.ToBase64String(buffer);
-    }
+        }
 }

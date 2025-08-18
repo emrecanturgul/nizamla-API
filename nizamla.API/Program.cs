@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -6,6 +7,7 @@ using nizamla.Api.Services;
 using nizamla.Application.Interfaces;
 using nizamla.Application.Mappings;
 using nizamla.Application.Services;
+using nizamla.Core.Entities;
 using nizamla.Core.Interfaces;
 using nizamla.Infrastructure.Data;
 using nizamla.Infrastructure.Repositories;
@@ -44,6 +46,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<PasswordHasher<User>>();
+
 
 builder.Services.AddScoped<IJwtService, JwtTokenService>();
 var jwtSettings = builder.Configuration.GetSection("Jwt");

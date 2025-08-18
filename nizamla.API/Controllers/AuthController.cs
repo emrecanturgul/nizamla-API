@@ -27,20 +27,25 @@ namespace nizamla.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var existing = await _users.GetByUsernameAsync(req.Username);
-            if (existing != null)
+            var existingUsername = await _users.GetByUsernameAsync(req.Username);
+            if (existingUsername != null)
                 return Conflict("Username already exists");
+
+           
+            var existingEmail = await _users.GetByEmailAsync(req.Email);
+            if (existingEmail != null)
+                return Conflict("Email already exists");
 
             var user = new User
             {
                 Username = req.Username,
                 Email = req.Email,
-                Role = "User",
+                Role = "User"
             };
 
             user.PasswordHash = _passwordHasher.HashPassword(user, req.Password);
-
             await _users.CreateAsync(user);
+
             var (access, accessExp) = _jwt.CreateAccessToken(user);
             var (refresh, refreshExp) = await _jwt.CreateAndStoreRefreshTokenAsync(user);
 
@@ -54,6 +59,7 @@ namespace nizamla.Api.Controllers
                 Role = user.Role
             });
         }
+
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest req)

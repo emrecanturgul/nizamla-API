@@ -46,7 +46,12 @@ namespace nizamla.Infrastructure.Repositories
                 .ThenByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }
-
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _context.Users
+                .Include(u => u.RefreshTokens)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
         public async Task<TaskItem?> GetByIdAsync(int id) 
         {
             return await _context.TaskItems.FindAsync(id); 
