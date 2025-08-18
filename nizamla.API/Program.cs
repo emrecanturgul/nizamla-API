@@ -12,11 +12,7 @@ using nizamla.Infrastructure.Repositories;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.Services.AddControllers();
-
-// Swagger + JWT config
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -42,23 +38,14 @@ builder.Services.AddSwaggerGen(c =>
         { securitySchema, new[] { "Bearer" } }
     });
 });
-
-// AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Dependency Injection
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IJwtService, JwtTokenService>();
-
-
-// JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
@@ -78,15 +65,13 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero // expire süresinde gecikme olmasın
+        ClockSkew = TimeSpan.Zero 
     };
 });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-
-// HTTP pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -95,7 +80,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // JWT doğrulama
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();

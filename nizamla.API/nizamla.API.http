@@ -3,4 +3,3 @@
 GET {{nizamla.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
