@@ -6,10 +6,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace nizamla.Infrastructure.Migrations
 {
-    /// <inheritdoc />
     public partial class migr2 : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -36,8 +34,6 @@ namespace nizamla.Infrastructure.Migrations
                 table: "TaskItems",
                 column: "UserId");
         }
-
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

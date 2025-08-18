@@ -15,8 +15,6 @@ namespace nizamla.Application.Mappings
         public TaskMappingProfile()
         {
             CreateMap<TaskItem, TaskItemDto>();
-
-            // DTO -> Entity
             CreateMap<CreateTaskDto, TaskItem>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.IsCompleted, opt => opt.MapFrom(src => false))

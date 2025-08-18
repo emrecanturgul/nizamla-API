@@ -6,10 +6,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace nizamla.Infrastructure.Migrations
 {
-    /// <inheritdoc />
     public partial class AddRoleToUser : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -47,8 +45,6 @@ namespace nizamla.Infrastructure.Migrations
                 table: "RefreshTokens",
                 column: "UserId");
         }
-
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

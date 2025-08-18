@@ -20,8 +20,6 @@ namespace nizamla.Api.Controllers
             _users = users;
             _jwt = jwt;
         }
-
-        // 📌 Kullanıcı kaydı
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest req)
@@ -41,8 +39,6 @@ namespace nizamla.Api.Controllers
             };
 
             await _users.CreateAsync(user);
-
-            // Token üret
             var (access, accessExp) = _jwt.CreateAccessToken(user);
             var (refresh, refreshExp) = await _jwt.CreateAndStoreRefreshTokenAsync(user);
 
@@ -56,8 +52,6 @@ namespace nizamla.Api.Controllers
                 Role = user.Role
             });
         }
-
-        // 📌 Giriş
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest req)
@@ -81,8 +75,6 @@ namespace nizamla.Api.Controllers
                 Role = user.Role
             });
         }
-
-        // 📌 Access token yenileme
         [HttpPost("refresh")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest req)
@@ -115,8 +107,6 @@ namespace nizamla.Api.Controllers
             await _jwt.RevokeRefreshTokenAsync(req.RefreshToken);
             return NoContent();
         }
-
-        // Basit SHA256 hash (test için)
         private static string Sha256(string s)
         {
             using var sha = SHA256.Create();

@@ -70,8 +70,6 @@ namespace nizamla.Application.Services
                 var existingTask = await _taskRepository.GetByIdAsync(id);
                 if (existingTask == null)
                     return null;
-
-                // Sadece null olmayan değerleri güncelle
                 if (!string.IsNullOrWhiteSpace(updateTaskDto.Title))
                     existingTask.Title = updateTaskDto.Title;
 
