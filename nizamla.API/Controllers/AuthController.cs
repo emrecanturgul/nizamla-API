@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using nizamla.Application.Interfaces;
 using nizamla.Application.dtos.auth;
 using nizamla.Core.Entities;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace nizamla.Api.Controllers
 {
@@ -14,11 +13,13 @@ namespace nizamla.Api.Controllers
     {
         private readonly IUserRepository _users;
         private readonly IJwtService _jwt;
+        private readonly PasswordHasher<User> _passwordHasher;
 
-        public AuthController(IUserRepository users, IJwtService jwt)
+        public AuthController(IUserRepository users, IJwtService jwt, PasswordHasher<User> passwordHasher)
         {
             _users = users;
             _jwt = jwt;
+            _passwordHasher = passwordHasher;
         }
         [HttpPost("register")]
         [AllowAnonymous]
@@ -34,9 +35,10 @@ namespace nizamla.Api.Controllers
             {
                 Username = req.Username,
                 Email = req.Email,
-                PasswordHash = Sha256(req.Password),
-                Role = "User"
+                Role = "User",
             };
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, req.Password);
 
             await _users.CreateAsync(user);
             var (access, accessExp) = _jwt.CreateAccessToken(user);
@@ -59,7 +61,7 @@ namespace nizamla.Api.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var user = await _users.GetByUsernameAsync(req.Username);
-            if (user is null || user.PasswordHash != Sha256(req.Password))
+            if (user is null || _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, req.Password) != PasswordVerificationResult.Success)
                 return Unauthorized("Invalid credentials");
 
             var (access, accessExp) = _jwt.CreateAccessToken(user);
@@ -106,12 +108,6 @@ namespace nizamla.Api.Controllers
         {
             await _jwt.RevokeRefreshTokenAsync(req.RefreshToken);
             return NoContent();
-        }
-        private static string Sha256(string s)
-        {
-            using var sha = SHA256.Create();
-            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(s));
-            return Convert.ToHexString(bytes);
         }
     }
 }
