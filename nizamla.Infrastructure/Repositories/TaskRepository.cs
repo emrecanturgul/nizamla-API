@@ -52,6 +52,11 @@ namespace nizamla.Infrastructure.Repositories
             return await _context.TaskItems.FindAsync(id); 
         }
 
+        public async Task<IEnumerable<TaskItem>> GetByUserIdAsync(int userId)
+        {
+            return await _context.TaskItems.Where(t=> t.UserId == userId).OrderBy(t=>t.IsCompleted).ThenByDescending(t=>t.CreatedAt).ToListAsync();
+        }
+
         public async Task<TaskItem?> UpdateAsync(TaskItem taskItem)
         {
             var existingTask = await _context.TaskItems.FindAsync(taskItem.Id);

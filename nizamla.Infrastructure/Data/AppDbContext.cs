@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using nizamla.Core.Entities;
+using nizamla.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace nizamla.Infrastructure.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<TaskItem> TaskItems { get; set; }
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>(entity =>
@@ -34,6 +36,13 @@ namespace nizamla.Infrastructure.Data
                 entity.Property(e => e.CreatedAt).IsRequired();
                 entity.Property(e => e.UpdatedAt).IsRequired();
                 entity.HasIndex(e => e.UserId);
+            });
+            modelBuilder.Entity<RefreshToken>(e =>
+            {
+                e.Property(x => x.Token).IsRequired();
+                e.HasOne(x => x.User)
+                 .WithMany(u => u.RefreshTokens)
+                 .HasForeignKey(x => x.UserId);
             });
         }
     }

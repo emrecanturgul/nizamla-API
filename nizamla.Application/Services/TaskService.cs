@@ -109,5 +109,13 @@ namespace nizamla.Application.Services
                 throw new Exception($"ID {id} olan görev silinemedi", ex);
             }
         }
+
+      
+        public async Task<IEnumerable<TaskItemDto>> GetTasksByUserIdAsync(int userId)
+        {
+            var tasks = await _taskRepository.GetByUserIdAsync(userId);
+            return _mapper.Map<IEnumerable<TaskItemDto>>(tasks);
+        }
+
     }
 }

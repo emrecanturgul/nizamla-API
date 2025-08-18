@@ -15,5 +15,7 @@ namespace nizamla.Core.Interfaces
         Task<TaskItem?> UpdateAsync(TaskItem taskItem);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
+        Task<IEnumerable<TaskItem>> GetByUserIdAsync(int userId);
+
     }
 }
