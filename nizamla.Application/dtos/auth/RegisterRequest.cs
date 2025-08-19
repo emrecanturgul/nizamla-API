@@ -4,8 +4,7 @@ namespace nizamla.Application.dtos.auth
 {
     public class RegisterRequest
     {
-        [Required, MinLength(3), MaxLength(64)]
-        public string Username { get; set; } = default!;
+        public string Username { get; set; } = default!; 
 
         [Required, EmailAddress, MaxLength(100)]
         public string Email { get; set; } = default!;

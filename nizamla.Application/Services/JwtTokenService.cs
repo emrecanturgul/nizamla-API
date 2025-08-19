@@ -40,8 +40,8 @@ public class JwtTokenService : IJwtService
         );
         return (new JwtSecurityTokenHandler().WriteToken(token), expires);
     }
-    public async Task<(string token, DateTime expiresAt)> CreateAndStoreRefreshTokenAsync(User user)
-    {
+        public async Task<(string token, DateTime expiresAt)> CreateAndStoreRefreshTokenAsync(User user)
+        {
         var days = int.Parse(_config.GetSection("Jwt")["RefreshTokenDays"]!);
         var rt = new RefreshToken
         {
@@ -52,15 +52,15 @@ public class JwtTokenService : IJwtService
         };
         await _users.AddRefreshTokenAsync(rt);
         return (rt.Token, rt.ExpiresAt);
-    }
-    public async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
-    {
+        }
+        public async Task<User?> ValidateRefreshTokenAsync(string refreshToken)
+        {
         var rt = await _users.GetRefreshTokenAsync(refreshToken);
         if (rt is null) return null;
         if (rt.RevokedAt != null) return null;
         if (rt.ExpiresAt <= DateTime.UtcNow) return null;
         return rt.User;
-    }
+        }
 
         public async Task RevokeRefreshTokenAsync(string refreshToken)
         {
@@ -72,7 +72,7 @@ public class JwtTokenService : IJwtService
             await _users.SaveChangesAsync();
         }
         private static string GenerateSecureToken()
-       {
+        {
         Span<byte> buffer = stackalloc byte[32];
         RandomNumberGenerator.Fill(buffer);
         return Convert.ToBase64String(buffer);
