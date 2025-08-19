@@ -62,6 +62,35 @@ namespace nizamla.Infrastructure.Repositories
             return await _context.TaskItems.Where(t=> t.UserId == userId).OrderBy(t=>t.IsCompleted).ThenByDescending(t=>t.CreatedAt).ToListAsync();
         }
 
+        public async Task<(IEnumerable<TaskItem> Items, int TotalCount)> GetPagedAsync(
+    int page, int pageSize, bool? isCompleted, string? sortBy)
+        {
+            var query = _context.TaskItems.AsQueryable();
+
+            
+            if (isCompleted.HasValue)
+                query = query.Where(t => t.IsCompleted == isCompleted.Value);
+
+           
+            query = sortBy switch
+            {
+                "dueDate" => query.OrderBy(t => t.DueDate),
+                "createdAt" => query.OrderByDescending(t => t.CreatedAt),
+                _ => query.OrderBy(t => t.Id)
+            };
+
+            
+            var totalCount = await query.CountAsync();
+
+            
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<TaskItem?> UpdateAsync(TaskItem taskItem)
         {
             var existingTask = await _context.TaskItems.FindAsync(taskItem.Id);

@@ -68,5 +68,14 @@ namespace nizamla.API.Controllers
             await _taskService.DeleteTaskAsync(id);
             return NoContent();
         }
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10,
+    [FromQuery] bool? isCompleted = null, [FromQuery] string? sortBy = null)
+        {
+            var result = await _taskService.GetPagedTasksAsync(page, pageSize, isCompleted, sortBy);
+            return Ok(result);
+        }
+
+
     }
 }

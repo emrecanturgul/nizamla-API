@@ -18,5 +18,7 @@ namespace nizamla.Application.Services
         Task<bool> DeleteTaskAsync(int id);
 
         Task<IEnumerable<TaskItemDto>> GetTasksByUserIdAsync(int userId);
+        Task<PagedResult<TaskItemDto>> GetPagedTasksAsync(int page, int pageSize, bool? isCompleted, string? sortBy);
+
     }
 }

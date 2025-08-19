@@ -114,5 +114,18 @@ public class TaskService : ITaskService
         var tasks = await _taskRepository.GetByUserIdAsync(userId);
         return _mapper.Map<IEnumerable<TaskItemDto>>(tasks);
     }
+    public async Task<PagedResult<TaskItemDto>> GetPagedTasksAsync(int page, int pageSize, bool? isCompleted, string? sortBy)
+    {
+        var (items, totalCount) = await _taskRepository.GetPagedAsync(page, pageSize, isCompleted, sortBy);
+
+        return new PagedResult<TaskItemDto>
+        {
+            Items = _mapper.Map<IEnumerable<TaskItemDto>>(items),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+
 
 }

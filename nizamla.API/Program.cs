@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using nizamla.Api.Middleware;
 using nizamla.Api.Services;
 using nizamla.Application.Interfaces;
 using nizamla.Application.Services;
@@ -12,8 +15,6 @@ using nizamla.Core.Interfaces;
 using nizamla.Infrastructure.Data;
 using nizamla.Infrastructure.Repositories;
 using System.Text;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,6 +105,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseGlobalExceptionMiddleware();
+app.UseHttpsRedirection();
 
 app.MapControllers();
 app.Run();
