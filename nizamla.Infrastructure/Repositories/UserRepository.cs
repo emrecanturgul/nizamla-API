@@ -25,6 +25,13 @@ namespace nizamla.Infrastructure.Repositories
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _context.Users
+                .Include(u => u.RefreshTokens)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
         public async Task<User> CreateAsync(User user)
         {
             _context.Users.Add(user);
@@ -55,7 +62,6 @@ namespace nizamla.Infrastructure.Repositories
 
         public async Task RevokeRefreshTokenAsync(RefreshToken token)
         {
-            
             if (token == null) return;
             token.RevokedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
