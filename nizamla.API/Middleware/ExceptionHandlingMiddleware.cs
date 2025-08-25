@@ -1,4 +1,9 @@
-﻿using System.Net;
+﻿using Microsoft.AspNetCore.Http;
+using nizamla.Application.Exceptions;
+using Serilog;
+using Serilog.Events;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Text.Json;
 
 namespace nizamla.Api.Middleware
@@ -6,13 +11,20 @@ namespace nizamla.Api.Middleware
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        public ExceptionHandlingMiddleware(RequestDelegate next)
         {
             _next = next;
-            _logger = logger;
         }
+
+        private static readonly Dictionary<Type, (HttpStatusCode StatusCode, string Message, LogEventLevel LogLevel, string LogText)> ExceptionMappings = new()
+        {
+            { typeof(UnauthorizedAccessException), (HttpStatusCode.Unauthorized, "Yetkisiz erişim.", LogEventLevel.Warning, "Unauthorized access") },
+            { typeof(KeyNotFoundException), (HttpStatusCode.NotFound, "Kayıt bulunamadı.", LogEventLevel.Warning, "Record not found") },
+            { typeof(ArgumentException), (HttpStatusCode.BadRequest, "Geçersiz argüman.", LogEventLevel.Warning, "Invalid argument") },
+            { typeof(ValidationException), (HttpStatusCode.BadRequest, "Doğrulama hatası.", LogEventLevel.Warning, "Validation failed") },
+            { typeof(BusinessRuleException), (HttpStatusCode.Conflict, "İş kuralı ihlali.", LogEventLevel.Warning, "Business rule violation") }
+        };
 
         public async Task InvokeAsync(HttpContext context)
         {
@@ -22,44 +34,43 @@ namespace nizamla.Api.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Beklenmeyen bir hata oluştu");
+                var exceptionType = ex.GetType();
+                var (statusCode, clientMessage, logLevel, logText) = ExceptionMappings.ContainsKey(exceptionType)
+                    ? ExceptionMappings[exceptionType]
+                    : (HttpStatusCode.InternalServerError, "Sunucuda beklenmeyen bir hata oluştu.", LogEventLevel.Error, "Unhandled exception");
 
+                var logDetails = new
+                {
+                    StatusCode = (int)statusCode,
+                    Message = clientMessage,
+                    Path = context.Request.Path,
+                    Method = context.Request.Method,
+                    Query = context.Request.QueryString.ToString(),
+                    StackTrace = ex.StackTrace
+                };
+
+                Log.Write(logLevel, ex, "{LogText} | {@Details}", logText, logDetails);
+
+                context.Response.Clear();
+                context.Response.StatusCode = (int)statusCode;
                 context.Response.ContentType = "application/json";
-
-              
-                var statusCode = (int)HttpStatusCode.InternalServerError;
-                var message = "Sunucuda beklenmeyen bir hata oluştu.";
-
-                if (ex is UnauthorizedAccessException)
-                {
-                    statusCode = (int)HttpStatusCode.Unauthorized;
-                    message = "Yetkisiz erişim.";
-                }
-                else if (ex is KeyNotFoundException)
-                {
-                    statusCode = (int)HttpStatusCode.NotFound;
-                    message = "Kayıt bulunamadı.";
-                }
-                else if (ex is ArgumentException)
-                {
-                    statusCode = (int)HttpStatusCode.BadRequest;
-                    message = ex.Message;
-                }
-
-                context.Response.StatusCode = statusCode;
 
                 var errorResponse = new
                 {
-                    statusCode,
-                    error = message,
+                    statusCode = (int)statusCode,
+                    error = clientMessage,
                     details = ex.Message 
                 };
 
-                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                var json = JsonSerializer.Serialize(errorResponse, options);
+                var json = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
 
                 await context.Response.WriteAsync(json);
             }
         }
     }
+
+ 
 }

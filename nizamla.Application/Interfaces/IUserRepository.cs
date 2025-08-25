@@ -16,8 +16,6 @@ namespace nizamla.Application.Interfaces
         Task<User?> GetByEmailAsync(string email);
         Task AddRefreshTokenAsync(RefreshToken token);
         Task<RefreshToken?> GetRefreshTokenAsync(string token);
-
-      
         Task<List<RefreshToken>> GetRefreshTokensByUserIdAsync(int userId);
 
         Task RevokeRefreshTokenAsync(RefreshToken token);

@@ -17,7 +17,8 @@ namespace nizamla.Core.Interfaces
         Task<bool> ExistsAsync(int id);
         Task<IEnumerable<TaskItem>> GetByUserIdAsync(int userId);
         Task<(IEnumerable<TaskItem> Items, int TotalCount)> GetPagedAsync(
-    int page, int pageSize, bool? isCompleted, string? sortBy);
+    int userId, int page, int pageSize, bool? isCompleted, string? sortBy);
+
 
 
     }

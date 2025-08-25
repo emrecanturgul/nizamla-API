@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{7AC5CC97-E448-48CD-9AF9-CB0EC38BC862}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nizamla.Tests", "nizamla.Tests\nizamla.Tests.csproj", "{F8E9B740-2BB6-4A3D-B1BE-05F15E9B97C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{E962AC1E-E050-4E94-BAEC-15374EF36705}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E962AC1E-E050-4E94-BAEC-15374EF36705}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E962AC1E-E050-4E94-BAEC-15374EF36705}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8E9B740-2BB6-4A3D-B1BE-05F15E9B97C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8E9B740-2BB6-4A3D-B1BE-05F15E9B97C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8E9B740-2BB6-4A3D-B1BE-05F15E9B97C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8E9B740-2BB6-4A3D-B1BE-05F15E9B97C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

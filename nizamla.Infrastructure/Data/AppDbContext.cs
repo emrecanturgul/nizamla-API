@@ -15,6 +15,7 @@ namespace nizamla.Infrastructure.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<TaskItem> TaskItems { get; set; }
+        public DbSet<LogEntry> Logs { get; set; }
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
