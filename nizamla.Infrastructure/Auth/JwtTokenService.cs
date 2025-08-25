@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using nizamla.Application.Interfaces;
@@ -12,7 +13,7 @@ using nizamla.Domain.Entities;
 namespace nizamla.Infrastructure.Auth
 {
     public class JwtTokenService : IJwtService
-    {
+    {   private readonly IConfiguration _config;
         private readonly JwtOptions _jwt;
         private readonly IRefreshTokenPolicy _refreshPolicy;
         private readonly IUserRepository _users;
@@ -20,16 +21,21 @@ namespace nizamla.Infrastructure.Auth
         public JwtTokenService(
             IOptions<JwtOptions> jwtOptions,
             IRefreshTokenPolicy refreshPolicy,
-            IUserRepository users)
+            IUserRepository users, IConfiguration configuration)
         {
             _jwt = jwtOptions.Value;
             _refreshPolicy = refreshPolicy;
             _users = users;
+            _config = configuration;
         }
 
         public (string token, DateTime expiresAt) CreateAccessToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
+            var jwt = _config.GetSection("Jwt");
+            
+            var keyString = _config["Jwt:Key"]
+                ?? throw new InvalidOperationException("JWT signing key not configured. Set the 'Jwt__Key' environment variable or user secret.");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>

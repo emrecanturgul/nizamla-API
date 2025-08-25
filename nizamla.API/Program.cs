@@ -121,11 +121,14 @@ builder.Services.AddScoped<PasswordHasher<User>>();
 // JwtTokenService artık Infrastructure katmanında
 builder.Services.AddScoped<IJwtService, JwtTokenService>();
 
-// ------------------- Authentication -------------------
-// Token doğrulama için JwtOptions'u okuyup ayarla
-var jwtSection = builder.Configuration.GetSection("Jwt");
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]!));
+var jwtSettings = builder.Configuration.GetSection("Jwt");
 
+var keyString = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(keyString))
+{
+    throw new InvalidOperationException("JWT signing key not configured. Set the 'Jwt__Key' environment variable or user secret.");
+}
+var key = Encoding.UTF8.GetBytes(keyString);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
