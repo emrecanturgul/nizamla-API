@@ -117,8 +117,12 @@ public class TaskService : ITaskService
     public async Task<PagedResult<TaskItemDto>> GetPagedTasksAsync(
     int userId, int page, int pageSize, bool? isCompleted, string? sortBy)
     {
-        var (items, totalCount) = await _taskRepository.GetPagedAsync(userId, page, pageSize, isCompleted, sortBy);
+        if (page <= 0)
+            throw new ArgumentOutOfRangeException(nameof(page), "Page must be greater than zero.");
+        if (pageSize <= 0)
+            throw new ArgumentOutOfRangeException(nameof(pageSize), "PageSize must be greater than zero.");
 
+        var (items, totalCount) = await _taskRepository.GetPagedAsync(userId, page, pageSize, isCompleted, sortBy);
         return new PagedResult<TaskItemDto>
         {
             Items = _mapper.Map<IEnumerable<TaskItemDto>>(items),

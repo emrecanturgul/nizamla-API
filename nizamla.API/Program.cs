@@ -12,47 +12,70 @@ using nizamla.Application.Services;
 using nizamla.Application.Validators;
 using nizamla.Core.Entities;
 using nizamla.Core.Interfaces;
+using nizamla.Infrastructure.Auth;
 using nizamla.Infrastructure.Data;
 using nizamla.Infrastructure.Repositories;
-using nizamla.Infrastructure.Auth; // JwtOptions, JwtTokenService, IRefreshTokenPolicy
 using Serilog;
+using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ------------------- Logging -------------------
-builder.Logging.ClearProviders();
-builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
-builder.Logging.AddConsole();
+// ---------------- Serilog Logging ----------------
+builder.Host.UseSerilog((context, config) =>
+{
+    config
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+        .WriteTo.Seq("http://localhost:5341") // SEQ aktifse bu çalışır
+        .WriteTo.PostgreSQL(
+            connectionString: context.Configuration.GetConnectionString("DefaultConnection"),
+            tableName: "Logs",
+            needAutoCreateTable: true
+        );
+});
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .WriteTo.PostgreSQL(
-        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
-        tableName: "Logs",
-        needAutoCreateTable: true
-    )
-    .CreateLogger();
+// ---------------- JWT Config ----------------
+var jwtSection = builder.Configuration.GetSection("Jwt");
 
-builder.Host.UseSerilog();
+var jwtKey = jwtSection["Key"]
+    ?? Environment.GetEnvironmentVariable("JWT__KEY")
+    ?? throw new InvalidOperationException("Jwt:Key eksik. appsettings.json veya environment variable ile tanımlanmalı.");
 
-// ------------------- Options (JWT) -------------------
-// Access token ayarlarını appsettings:Jwt'tan bağla (Refresh burada yok!)
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+if (Encoding.UTF8.GetBytes(jwtKey).Length < 32)
+    throw new InvalidOperationException("Jwt:Key 256 bit’ten kısa. En az 32 karakter güçlü bir key girin.");
 
-// Refresh token süresi appsettings'ten değil, POLICY'den (ör. 60 gün)
+var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer eksik.");
+var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience eksik.");
+
+builder.Services.Configure<JwtOptions>(opt =>
+{
+    jwtSection.Bind(opt);
+    opt.Key = jwtKey;
+});
+
 builder.Services.AddSingleton<IRefreshTokenPolicy>(
-    new DefaultRefreshTokenPolicy(TimeSpan.FromDays(60))
-);
+    new DefaultRefreshTokenPolicy(TimeSpan.FromDays(60)));
 
-// ------------------- Swagger -------------------
+// ---------------- Swagger ----------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Nizamla API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Nizamla API",
+        Version = "v1",
+        Description = "Görev yönetimi ve kullanıcı kimlik doğrulaması için REST API",
+        Contact = new OpenApiContact
+        {
+            Name = "Nizamla Developer",
+            Email = "destek@nizamla.com"
+        }
+    });
 
+    // JWT için Swagger header
     var securitySchema = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -60,23 +83,28 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT",
-        Description = "Enter 'Bearer {token}'",
-        Reference = new OpenApiReference
-        {
-            Type = ReferenceType.SecurityScheme,
-            Id = "Bearer"
-        }
+        Description = "JWT Bearer Token: 'Bearer {token}'",
+        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
     };
+
     c.AddSecurityDefinition("Bearer", securitySchema);
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
         { securitySchema, new[] { "Bearer" } }
     });
+
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+        c.IncludeXmlComments(xmlPath);
 });
 
-// ------------------- Controllers + FluentValidation -------------------
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+
+// ModelState custom error response
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -103,32 +131,21 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-builder.Services.AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
-// ------------------- AutoMapper -------------------
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// ------------------- Database -------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ------------------- Dependency Injection -------------------
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<PasswordHasher<User>>();
-// JwtTokenService artık Infrastructure katmanında
 builder.Services.AddScoped<IJwtService, JwtTokenService>();
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
+// ---------------- JWT Authentication ----------------
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
-var keyString = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrWhiteSpace(keyString))
-{
-    throw new InvalidOperationException("JWT signing key not configured. Set the 'Jwt__Key' environment variable or user secret.");
-}
-var key = Encoding.UTF8.GetBytes(keyString);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -142,23 +159,55 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSection["Issuer"],
-        ValidAudience = jwtSection["Audience"],
+        ValidIssuer = issuer,
+        ValidAudience = audience,
         IssuerSigningKey = signingKey,
         ClockSkew = TimeSpan.Zero
     };
+
+   
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                statusCode = 401,
+                error = "Yetkisiz erişim",
+                details = "Geçerli bir JWT token gerekli."
+            };
+
+            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+        },
+        OnForbidden = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                statusCode = 403,
+                error = "Erişim reddedildi",
+                details = "Bu kaynağa erişim izniniz yok."
+            };
+
+            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+        }
+    };
 });
 
-// ------------------- Authorization -------------------
 builder.Services.AddAuthorization();
 
-// ------------------- Build App -------------------
+// ---------------- Build App ----------------
 var app = builder.Build();
 
+app.UseSerilogRequestLogging(); // HTTP logları
+app.UseGlobalExceptionMiddleware(); // Global hata middleware
 
-app.UseGlobalExceptionMiddleware();
-
-// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -168,6 +217,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.Run();

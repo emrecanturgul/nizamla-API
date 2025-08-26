@@ -12,7 +12,7 @@ namespace nizamla.Infrastructure.Auth
     }
     public sealed class DefaultRefreshTokenPolicy : IRefreshTokenPolicy
     {
-        public DefaultRefreshTokenPolicy(TimeSpan lifeSpan) =>  lifeSpan = lifeSpan;
+        public DefaultRefreshTokenPolicy(TimeSpan lifeSpan) =>  LifeSpan = lifeSpan;
         public TimeSpan LifeSpan { get; }
 
     }

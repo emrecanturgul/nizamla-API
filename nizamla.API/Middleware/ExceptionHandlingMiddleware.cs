@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿// nizamla.API/Middleware/ExceptionHandlingMiddleware.cs
+using Microsoft.AspNetCore.Http;
 using nizamla.Application.Exceptions;
 using Serilog;
 using Serilog.Events;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 
@@ -17,15 +17,6 @@ namespace nizamla.Api.Middleware
             _next = next;
         }
 
-        private static readonly Dictionary<Type, (HttpStatusCode StatusCode, string Message, LogEventLevel LogLevel, string LogText)> ExceptionMappings = new()
-        {
-            { typeof(UnauthorizedAccessException), (HttpStatusCode.Unauthorized, "Yetkisiz erişim.", LogEventLevel.Warning, "Unauthorized access") },
-            { typeof(KeyNotFoundException), (HttpStatusCode.NotFound, "Kayıt bulunamadı.", LogEventLevel.Warning, "Record not found") },
-            { typeof(ArgumentException), (HttpStatusCode.BadRequest, "Geçersiz argüman.", LogEventLevel.Warning, "Invalid argument") },
-            { typeof(ValidationException), (HttpStatusCode.BadRequest, "Doğrulama hatası.", LogEventLevel.Warning, "Validation failed") },
-            { typeof(BusinessRuleException), (HttpStatusCode.Conflict, "İş kuralı ihlali.", LogEventLevel.Warning, "Business rule violation") }
-        };
-
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -34,10 +25,29 @@ namespace nizamla.Api.Middleware
             }
             catch (Exception ex)
             {
-                var exceptionType = ex.GetType();
-                var (statusCode, clientMessage, logLevel, logText) = ExceptionMappings.ContainsKey(exceptionType)
-                    ? ExceptionMappings[exceptionType]
-                    : (HttpStatusCode.InternalServerError, "Sunucuda beklenmeyen bir hata oluştu.", LogEventLevel.Error, "Unhandled exception");
+                if (ex is HttpException httpEx)
+                {
+                    var httpJson = JsonSerializer.Serialize(new
+                    {
+                        statusCode = httpEx.StatusCode,
+                        error = httpEx.ClientError,
+                        details = httpEx.Message
+                    });
+
+                    context.Response.StatusCode = httpEx.StatusCode;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync(httpJson);
+                    return;
+                }
+
+                var (statusCode, clientMessage, logLevel, logText) = ex switch
+                {
+                    UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Yetkisiz erişim.", LogEventLevel.Warning, "Unauthorized access"),
+                    KeyNotFoundException => (HttpStatusCode.NotFound, "Kayıt bulunamadı.", LogEventLevel.Warning, "Record not found"),
+                    ArgumentException => (HttpStatusCode.BadRequest, "Geçersiz argüman.", LogEventLevel.Warning, "Invalid argument"),
+                    ValidationException => (HttpStatusCode.BadRequest, "Doğrulama hatası.", LogEventLevel.Warning, "Validation failed"),
+                    _ => (HttpStatusCode.InternalServerError, "Sunucuda beklenmeyen bir hata oluştu.", LogEventLevel.Error, "Unhandled exception")
+                };
 
                 var logDetails = new
                 {
@@ -51,15 +61,11 @@ namespace nizamla.Api.Middleware
 
                 Log.Write(logLevel, ex, "{LogText} | {@Details}", logText, logDetails);
 
-                context.Response.Clear();
-                context.Response.StatusCode = (int)statusCode;
-                context.Response.ContentType = "application/json";
-
                 var errorResponse = new
                 {
                     statusCode = (int)statusCode,
                     error = clientMessage,
-                    details = ex.Message 
+                    details = ex.Message
                 };
 
                 var json = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions
@@ -67,10 +73,11 @@ namespace nizamla.Api.Middleware
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 });
 
+                context.Response.Clear();
+                context.Response.StatusCode = (int)statusCode;
+                context.Response.ContentType = "application/json";
                 await context.Response.WriteAsync(json);
             }
         }
     }
-
- 
 }
