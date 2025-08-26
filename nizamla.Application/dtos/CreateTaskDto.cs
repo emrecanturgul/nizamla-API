@@ -18,6 +18,6 @@ namespace nizamla.Application.dtos
 
         public DateTime? DueDate { get; set; }
 
-        public int? UserId { get; set; }
+     
     }
 }

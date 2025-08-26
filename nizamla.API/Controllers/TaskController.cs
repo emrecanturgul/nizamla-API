@@ -101,9 +101,9 @@ namespace nizamla.API.Controllers
         {
             var userId = GetCurrentUserId();
             var dto = _mapper.Map<CreateTaskDto>(request);
-            dto.UserId = userId;
+            
 
-            var created = await _taskService.CreateTaskAsync(dto);
+            var created = await _taskService.CreateTaskAsync(dto, userId);
 
             return CreatedAtAction(nameof(GetTaskById), new { id = created.Id }, new
             {

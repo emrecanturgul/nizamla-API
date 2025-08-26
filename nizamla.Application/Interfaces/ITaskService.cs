@@ -10,7 +10,7 @@ namespace nizamla.Application.Services
     {
         Task<IEnumerable<TaskItemDto>> GetAllTasksAsync();
         Task<TaskItemDto?> GetTaskByIdAsync(int id);
-        Task<TaskItemDto> CreateTaskAsync(CreateTaskDto createTaskDto);
+        Task<TaskItemDto> CreateTaskAsync(CreateTaskDto createTaskDto , int userId);
         Task<TaskItemDto?> UpdateTaskAsync(int id, UpdateTaskDto updateTaskDto);
         Task<bool> DeleteTaskAsync(int id);
         Task<IEnumerable<TaskItemDto>> GetTasksByUserIdAsync(int userId);

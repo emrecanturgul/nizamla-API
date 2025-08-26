@@ -46,11 +46,12 @@ public class TaskService : ITaskService
         }
     }
 
-    public async Task<TaskItemDto> CreateTaskAsync(CreateTaskDto createTaskDto)
+    public async Task<TaskItemDto> CreateTaskAsync(CreateTaskDto createTaskDto , int userId)
     {
         try
         {
             var taskEntity = _mapper.Map<TaskItem>(createTaskDto);
+            taskEntity.UserId = userId; 
             var createdTask = await _taskRepository.CreateAsync(taskEntity);
             return _mapper.Map<TaskItemDto>(createdTask);
         }
