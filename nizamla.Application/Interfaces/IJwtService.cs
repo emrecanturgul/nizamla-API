@@ -12,7 +12,7 @@ namespace nizamla.Application.Interfaces
         (string token, DateTime expiresAt)CreateAccessToken(User user);
         Task<(string token, DateTime expiresAt)> CreateAndStoreRefreshTokenAsync(User user);
         Task<User?> ValidateRefreshTokenAsync(string refreshToken);
-        Task RevokeRefreshTokenAsync(string refreshToken);
+        Task RevokeRefreshTokenAsync(string refreshToken);  
       
     }
 }

@@ -73,11 +73,17 @@ namespace nizamla.Infrastructure.Repositories
         }
 
         public async Task<(IEnumerable<TaskItem> Items, int TotalCount)> GetPagedAsync(
-      int userId, int page, int pageSize, bool? isCompleted, string? sortBy)
+     int userId, int page, int pageSize, bool? isCompleted, string? sortBy)
         {
-            var query = _context.TaskItems
-                .Where(t => t.UserId == userId);
+            if (page <= 0)
+                throw new ArgumentException("Sayfa numarası 0 veya negatif olamaz.", nameof(page));
 
+            if (pageSize <= 0)
+                throw new ArgumentException("Sayfa boyutu 0 veya negatif olamaz.", nameof(pageSize));
+
+            var query = _context.TaskItems.Where(t => t.UserId == userId);
+
+           
             if (isCompleted.HasValue)
                 query = query.Where(t => t.IsCompleted == isCompleted.Value);
 
@@ -85,7 +91,8 @@ namespace nizamla.Infrastructure.Repositories
             {
                 "dueDate" => query.OrderBy(t => t.DueDate),
                 "createdAt" => query.OrderByDescending(t => t.CreatedAt),
-                _ => query.OrderBy(t => t.Id)
+                "id" or null => query.OrderBy(t => t.Id), // null gelirse id default
+                _ => throw new ArgumentException($"Geçersiz sort parametresi: {sortBy}. Kullanılabilir değerler: dueDate, createdAt, id")
             };
 
             var totalCount = await query.CountAsync();

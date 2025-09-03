@@ -1,10 +1,8 @@
-﻿namespace nizamla.Api.Middleware
+﻿namespace nizamla.Api.Middleware;
+public static class ExceptionMiddlewareExtensions
 {
-    public static class ExceptionMiddlewareExtensions
+    public static IApplicationBuilder UseGlobalExceptionMiddleware(this IApplicationBuilder builder)
     {
-        public static IApplicationBuilder UseGlobalExceptionMiddleware(this IApplicationBuilder builder)
-        {
-            return builder.UseMiddleware<ExceptionHandlingMiddleware>();
-        }
+        return builder.UseMiddleware<ExceptionHandlingMiddleware>();
     }
 }
